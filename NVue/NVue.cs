@@ -16,14 +16,21 @@ namespace NVue{
     public class NVue : IView{
         private string _viewPhysicalPath;
 
+        private string[] _locationFormats;
+        private string _controllerName;
+
         private string _templateClassName;
 
-        public NVue(string path){
+        public NVue(string path, string[] locationFormats, string controllerName){
             if(string.IsNullOrWhiteSpace(path)){
                 throw new ArgumentNullException();
             }
             _viewPhysicalPath = path;
             _templateClassName = path.Replace("/", string.Empty).Replace(".nvue", string.Empty).Replace("Views", string.Empty) + "Template";
+
+            //TODO: need better way to search for layout location
+            _locationFormats = locationFormats;
+            _controllerName = controllerName;
         }
 
         public string Path => _viewPhysicalPath;
@@ -34,7 +41,24 @@ namespace NVue{
             // initial naive approach
             //return context.Writer.WriteAsync(rawContents.Replace("{{Message}}", context.ViewData["Message"].ToString()));
 
-            var sourceDocument = TemplateParser.Parse(rawTemplate, context, _templateClassName);
+            var parser = new TemplateParser(rawTemplate);
+            parser.Parse();
+
+            var layoutName = parser.LayoutTemplateName ?? "_Layout";
+            var layoutPath = GetLayoutPath(layoutName);
+
+            string sourceDocument;
+            if(layoutPath == null){
+                sourceDocument = parser.GenerateFinalSourceDocument(_templateClassName, context);
+            }else{
+                var rawLayoutTemplate = File.ReadAllText(layoutPath);
+                var layoutParser = new TemplateParser(rawLayoutTemplate, parser.Slots, parser.Scripts);
+                layoutParser.Parse();
+
+                sourceDocument = layoutParser.GenerateFinalSourceDocument(_templateClassName, context);
+            }
+
+            Console.WriteLine(sourceDocument);
 
             var assemblyName = System.IO.Path.GetRandomFileName();
 
@@ -47,6 +71,17 @@ namespace NVue{
             var renderResult = baseInstance.Execute();
 
             return context.Writer.WriteAsync(renderResult);
+        }
+
+        private string GetLayoutPath(string layoutName){
+            foreach(var locationFormat in _locationFormats){
+                var location = string.Format(locationFormat, layoutName, _controllerName);
+
+                if(File.Exists(location)){
+                    return location;
+                }
+            }
+            return null;
         }
 
         private CSharpCompilation Compile(string assemblyName, string sourceDocument){

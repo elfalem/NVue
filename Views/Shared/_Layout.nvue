@@ -1,0 +1,10 @@
+<template>
+<html>
+    <body>
+        <header>
+        <slot name="header">Default header slot content.</slot>
+        </header>
+        <slot></slot>
+    </body>
+</html>
+</template>

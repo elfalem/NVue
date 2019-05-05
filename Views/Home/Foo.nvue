@@ -8,6 +8,9 @@
             Comment {{comment}} {{howMany(5)}}
         </div>
     </div>
+    <template v-slot:header>
+        This is in a slot.
+    </template>
     <div v-show="5 == 5">
         This is first.
     </div>

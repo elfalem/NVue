@@ -38,7 +38,7 @@ namespace NVue{
                 var location = string.Format(locationFormat, viewName, controllerName);
                 
                 if(File.Exists(location)){
-                    return ViewEngineResult.Found("Default", new NVue(location));
+                    return ViewEngineResult.Found("Default", new NVue(location, _viewLocationFormats, controllerName));
                 }
                 checkedLocations.Add(location);
             }
@@ -53,7 +53,7 @@ namespace NVue{
                 return ViewEngineResult.NotFound(appRelativePath, Enumerable.Empty<string>());
             }
 
-            return ViewEngineResult.Found("Default", new NVue(appRelativePath));
+            return ViewEngineResult.Found("Default", new NVue(appRelativePath, _viewLocationFormats, null));
         }
 
         public static string GetNormalizedRouteValue(ActionContext context, string key)

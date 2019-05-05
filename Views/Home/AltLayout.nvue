@@ -1,0 +1,5 @@
+<template>
+<xml>
+    <slot></slot>
+</xml>
+</template>
