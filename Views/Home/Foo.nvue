@@ -1,0 +1,29 @@
+<template>
+    <div style="font-size: 30px;">
+        <b :class="2+2">Message:</b> {{Message}}
+    </div>
+    <div v-for="var post in Posts" v-bind:id="post.Id">
+        Post {{post.Id}} {{post.Title}}
+        <div v-for="var comment in Comments" v-if='post.Title.Length == 3 && comment=="b"'>
+            Comment {{comment}} {{howMany(5)}}
+        </div>
+    </div>
+    <div v-show="5 == 5">
+        This is first.
+    </div>
+    <template v-if="Posts.Count == 2">
+        This is blue {{5 + 3}}.
+    </template>
+    <div v-else>
+        This is second.
+    </div>
+    <p/>
+</template>
+
+<script type="text/csharp">
+string example = "example";
+
+int howMany(int times){
+    return example.Length * times;
+}
+</script>
