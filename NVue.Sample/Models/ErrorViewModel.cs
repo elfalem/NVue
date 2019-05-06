@@ -1,6 +1,6 @@
 using System;
 
-namespace NVue.Models
+namespace NVue.Sample.Models
 {
     public class ErrorViewModel
     {

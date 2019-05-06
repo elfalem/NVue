@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Blog;
 using Microsoft.AspNetCore.Mvc;
-using NVue.Models;
+using NVue.Sample.Models;
 
-namespace NVue.Controllers
+namespace NVue.Sample.Controllers
 {
     public class HomeController : Controller
     {

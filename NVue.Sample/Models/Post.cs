@@ -1,6 +1,6 @@
 using System;
 
-namespace Blog
+namespace NVue.Sample.Models
 {
     public class Post
     {

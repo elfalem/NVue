@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace NVue{
+namespace NVue.Core{
 
     public class TemplateParser{
 
@@ -36,7 +36,7 @@ namespace NVue{
 
             sourceDocument.AppendLine($@"
 namespace TemplateNamespace{{
-    public class {templateClassName} : NVue.BaseNVueTemplate
+    public class {templateClassName} : NVue.Core.BaseNVueTemplate
     {{
         private System.Text.StringBuilder _output = new System.Text.StringBuilder();");
 

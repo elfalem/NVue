@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 
-namespace NVue{
+namespace NVue.Core{
     public class NVue : IView{
         private string _viewPhysicalPath;
 
@@ -62,7 +62,7 @@ namespace NVue{
 
             var assemblyName = System.IO.Path.GetRandomFileName();
 
-            var compilation = Compile(assemblyName, sourceDocument);
+            var compilation = Compile(assemblyName, sourceDocument, context);
 
             var assembly = LoadAssembly(compilation);
 
@@ -84,22 +84,34 @@ namespace NVue{
             return null;
         }
 
-        private CSharpCompilation Compile(string assemblyName, string sourceDocument){
+        private CSharpCompilation Compile(string assemblyName, string sourceDocument, ViewContext context){
             var sourceText = SourceText.From(sourceDocument.ToString(), Encoding.UTF8);
             var syntaxTree = CSharpSyntaxTree.ParseText(sourceText).WithFilePath(assemblyName);
 
-            var references = new List<PortableExecutableReference>();
-            var mscorlib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
-            var baseTemplateReference = MetadataReference.CreateFromFile(typeof(BaseNVueTemplate).Assembly.Location);
-            references.Add(mscorlib);
-            references.Add(baseTemplateReference);
-            // foreach(var val in context.ViewData.Values){
-                //references.Add(MetadataReference.CreateFromFile(val.GetType().Assembly.Location)); //most likely needed when referencing a type from another project or nuget package
-            // }
+
+            var referenceLocations = new List<string>();            
+            var mscorlibLocation = typeof(object).Assembly.Location;
+            var baseTemplateLocation = typeof(BaseNVueTemplate).Assembly.Location;
+            referenceLocations.Add(mscorlibLocation);
+            referenceLocations.Add(baseTemplateLocation);            
+            foreach(var value in context.ViewData.Values){
+                GetAssemblyReferences(referenceLocations, value.GetType());
+            }
+
+            var references = referenceLocations.Distinct().Select(location => MetadataReference.CreateFromFile(location));
 
             var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
 
             return CSharpCompilation.Create(assemblyName, options: compilationOptions, references: references).AddSyntaxTrees(syntaxTree);
+        }
+
+        private void GetAssemblyReferences(List<string> referenceLocations, Type type){
+            referenceLocations.Add(type.Assembly.Location);
+            if(type.IsGenericType){
+                foreach(var genericType in type.GenericTypeArguments){
+                    GetAssemblyReferences(referenceLocations, genericType);
+                }
+            }
         }
 
         private Assembly LoadAssembly(CSharpCompilation compilation){

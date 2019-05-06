@@ -21,7 +21,7 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 //https://github.com/aspnet/AspNetCore/blob/1b500858354efe26493af632bf0e3f5462dc6246/src/Mvc/Mvc.Razor.RuntimeCompilation/src/RuntimeViewCompiler.cs - most important file
 //https://github.com/aspnet/AspNetCore/blob/1b500858354efe26493af632bf0e3f5462dc6246/src/Mvc/Mvc.Razor.RuntimeCompilation/test/RuntimeViewCompilerTest.cs
 //https://github.com/aspnet/AspNetCore/blob/3c09d644cccdb21801f7a79e1188a1a1212de5d9/src/Shared/PropertyActivator/PropertyActivator.cs - second most important file
-namespace NVue{
+namespace NVue.Core{
     public class NVueViewEngine : IViewEngine {
 
         private string[] _viewLocationFormats;
