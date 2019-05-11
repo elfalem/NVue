@@ -1,0 +1,33 @@
+<template>
+    <div>
+        <h1>{{Blog.Name}}</h1>
+        <hr/>
+        <h3>{{Blog.Subtitle}}</h3>
+    </div>
+    <div v-for="var post in Blog.Posts" :id="post.Id">
+        Post {{post.Id}} {{post.Title}}
+        <div v-for="var comment in post.Comments" v-if='post.Title.Length == 3 && comment.Content=="b"'>
+            Comment {{comment.Content}} {{howMany(5)}}
+        </div>
+    </div>
+    <template v-slot:scripts>
+        <script>console.log('This content will be added to the \{\{Scripts\}\} slot.');</script>
+    </template>
+    <div v-show="5 == 5">
+        This is first.
+    </div>
+    <template v-if="Blog.Posts.Count == 2">
+        This is blue {{5 + 3}}.
+    </template>
+    <div v-else>
+        This is second.
+    </div>
+</template>
+
+<script type="text/csharp">
+string example = "example";
+
+int howMany(int times){
+    return example.Length * times;
+}
+</script>

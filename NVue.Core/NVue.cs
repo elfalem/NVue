@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -11,6 +12,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.CSharp.RuntimeBinder;
 
 namespace NVue.Core{
     public class NVue : IView{
@@ -92,11 +94,23 @@ namespace NVue.Core{
             var referenceLocations = new List<string>();            
             var mscorlibLocation = typeof(object).Assembly.Location;
             var baseTemplateLocation = typeof(BaseNVueTemplate).Assembly.Location;
+
+            // the following are needed for dynamic keyword support
+            var dynamicLocation = Assembly.Load(new AssemblyName("System.Linq.Expressions")).Location;
+            var mscsharpLocation = Assembly.Load(new AssemblyName("Microsoft.CSharp")).Location;
+            var runTimeLocation = Assembly.Load(new AssemblyName("System.Runtime")).Location;
+            var netStandardLocation = Assembly.Load(new AssemblyName("netstandard")).Location;
+            
             referenceLocations.Add(mscorlibLocation);
-            referenceLocations.Add(baseTemplateLocation);            
-            foreach(var value in context.ViewData.Values){
-                GetAssemblyReferences(referenceLocations, value.GetType());
-            }
+            referenceLocations.Add(baseTemplateLocation);
+            referenceLocations.Add(dynamicLocation);
+            referenceLocations.Add(mscsharpLocation);
+            referenceLocations.Add(runTimeLocation);
+            referenceLocations.Add(netStandardLocation);
+
+            // foreach(var value in context.ViewData.Values){
+            //     GetAssemblyReferences(referenceLocations, value.GetType());
+            // }
 
             var references = referenceLocations.Distinct().Select(location => MetadataReference.CreateFromFile(location));
 
@@ -105,14 +119,15 @@ namespace NVue.Core{
             return CSharpCompilation.Create(assemblyName, options: compilationOptions, references: references).AddSyntaxTrees(syntaxTree);
         }
 
-        private void GetAssemblyReferences(List<string> referenceLocations, Type type){
-            referenceLocations.Add(type.Assembly.Location);
-            if(type.IsGenericType){
-                foreach(var genericType in type.GenericTypeArguments){
-                    GetAssemblyReferences(referenceLocations, genericType);
-                }
-            }
-        }
+        // even this is not enough, if not for dynamics, would have to go into child properties
+        // private void GetAssemblyReferences(List<string> referenceLocations, Type type){
+        //     referenceLocations.Add(type.Assembly.Location);
+        //     if(type.IsGenericType){
+        //         foreach(var genericType in type.GenericTypeArguments){
+        //             GetAssemblyReferences(referenceLocations, genericType);
+        //         }
+        //     }
+        // }
 
         private Assembly LoadAssembly(CSharpCompilation compilation){
             using (var assemblyStream = new MemoryStream())

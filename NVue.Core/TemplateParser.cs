@@ -40,10 +40,12 @@ namespace TemplateNamespace{{
     {{
         private System.Text.StringBuilder _output = new System.Text.StringBuilder();");
 
-            //TODO: need to ensure template references the field (existence in ViewData is not enough)
+            //TODO: need to ensure template references the field (existence in ViewData is not enough), actually need to check the template as well
+            // what if defined in template but not in View, how to prevent this from erroring out?
             foreach(var pair in context.ViewData){
                 if(pair.Value != null){
-                    sourceDocument.AppendLine($"public {DeclarationFromType(pair.Value.GetType())} {pair.Key} {{get; set;}}");
+                    //sourceDocument.AppendLine($"public {DeclarationFromType(pair.Value.GetType())} {pair.Key} {{get; set;}}");
+                    sourceDocument.AppendLine($"public dynamic {pair.Key} {{get; set;}}");
                 }
             }
 
@@ -94,6 +96,7 @@ namespace TemplateNamespace{{
         }
 
         private void ProcessNode(StringBuilder sourceDocument, HtmlNode node){
+            //TODO: DOCTYPE declaration on html tag is not retained
             if(node.NodeType == HtmlNodeType.Element){
                 var slotAttribute = node.Attributes.Where(a => a.Name.StartsWith("v-slot:")).SingleOrDefault();
                 if(slotAttribute != null){
@@ -105,7 +108,8 @@ namespace TemplateNamespace{{
                     ProcessElementNode(slotSourceDoc, node);
                     Slots.Add(slotName, slotSourceDoc.ToString());
                 }else if(node.Name == "slot"){
-                    var slotName = node.Attributes.Contains("name") ? node.Attributes["name"].Value : "default";
+                    // slot names are not case sensitive (because that's how HAP treats attributes)
+                    var slotName = node.Attributes.Contains("name") ? node.Attributes["name"].Value.ToLower() : "default";
                     if(Slots.ContainsKey(slotName)){
                         sourceDocument.AppendLine(Slots[slotName]);
                     }else{
@@ -228,13 +232,13 @@ namespace TemplateNamespace{{
                 foreach(var literal in literals){
                     var literalStart = textValue.IndexOf(literal);
                     if(literalStart == 0){
-                        sourceDocument.AppendLine($"Write(@\"{literal}\");");
+                        sourceDocument.AppendLine($"Write(@\"{literal.Replace("\\{","{").Replace("\\}","}")}\");");
                         textValue = textValue.Substring(literal.Length);
                     }else{
                         var mustacheTag = textValue.Substring(0, literalStart);
                         sourceDocument.AppendLine($"Write({mustacheTag.TrimStart('{').TrimEnd('}')});");
 
-                        sourceDocument.AppendLine($"Write(@\"{literal}\");");
+                        sourceDocument.AppendLine($"Write(@\"{literal.Replace("\\{","{").Replace("\\}","}")}\");");
                         textValue = textValue.Substring(mustacheTag.Length + literal.Length);
                     }
                 }
@@ -245,16 +249,16 @@ namespace TemplateNamespace{{
             }
         }
 
-        private static string DeclarationFromType(Type type){
-            var fullName = type.FullName;
+        // private static string DeclarationFromType(Type type){
+        //     var fullName = type.FullName;
 
-            if(type.IsGenericType){
-                var generics = type.GenericTypeArguments.Select(g => DeclarationFromType(g));
-                fullName = fullName.Substring(0, fullName.IndexOf("`"));
-                return $"{fullName}<{string.Join(", ", generics)}>";
-            }
+        //     if(type.IsGenericType){
+        //         var generics = type.GenericTypeArguments.Select(g => DeclarationFromType(g));
+        //         fullName = fullName.Substring(0, fullName.IndexOf("`"));
+        //         return $"{fullName}<{string.Join(", ", generics)}>";
+        //     }
 
-            return fullName;
-        }
+        //     return fullName;
+        // }
     }
 }

@@ -20,25 +20,50 @@ namespace NVue.Sample.Controllers
             return View();
         }
 
-        public IActionResult Foo(){
-            ViewData["Message"] = "Bye World";
-            ViewData["Posts"] = new List<Post>{
-                new Post{
-                    Id = 1,
-                    Title = "one"
+        public IActionResult Blog(){
+            var blog = new Blog{
+                Name = "Foobar",
+                Subtitle = "A sample blog."
+            };
+
+            var postOne = new Post{
+                Id = 1,
+                Author = "John Doe",
+                Published = DateTime.Now,
+                Title = "My first post",
+                Content = "Hello World! This is my first blog post. I plan to write about many things. I hope you like it.",
+                Comments = new List<Comment>{
+                    new Comment{
+                        Id = 93,
+                        Author = null,
+                        Published = DateTime.Now,
+                        Content = "First"
                     },
-                new Post{
-                    Id = 2,
-                    Title = "two"
+                    new Comment{
+                        Id = 9834,
+                        Author = "Sally",
+                        Published = DateTime.Now,
+                        Content = "Looking forward to your posts!"
+                    }
                 }
             };
-            ViewData["Comments"] = new List<string>{"a", "b"};
-            // ViewData["Sample"] = new Dictionary<List<string>, List<string>>();
-            // ViewData["ArraySample"] = new string[]{};
-            // ViewData["Number"] = 5;
 
-            // ViewData["ErrorView"] = new ErrorViewModel();
-            // ViewData["Time"] = DateTime.Now;
+            var postTwo = new Post{
+                Id = 2,
+                Author = "John Doe",
+                Published = DateTime.Now,
+                Title = "Update",
+                Content = "It has been a long time since I last posted. I was busy with many projects. Stay tuned for updates.",
+                Comments = new List<Comment>()
+            };
+
+            blog.Posts = new List<Post>{
+                postOne,
+                postTwo
+            };
+
+            ViewData["Title"] = "My Blog";
+            ViewData["Blog"] = blog;
             return View();
         }
 
