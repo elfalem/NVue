@@ -64,10 +64,10 @@ namespace NVue.Core{
             }
 
             //Console.WriteLine(sourceDocument);
-            
+
             var compilation = CreateCompilation();
 
-            var syntaxTree = CSharpSyntaxTree.ParseText(sourceDocument); //.WithFilePath(assemblyName);
+            var syntaxTree = CSharpSyntaxTree.ParseText(sourceDocument);
             compilation = compilation.AddSyntaxTrees(syntaxTree);
 
             var missingProperties = GetMissingProperties(compilation);
@@ -98,24 +98,18 @@ namespace NVue.Core{
         }
 
         private CSharpCompilation CreateCompilation(){
-            var referenceLocations = new List<string>();
-            var mscorlibLocation = typeof(object).Assembly.Location;
-            var baseTemplateLocation = typeof(BaseNVueTemplate).Assembly.Location;
+            var assemblyLocations = new List<string>{
+                typeof(object).Assembly.Location,
+                typeof(BaseNVueTemplate).Assembly.Location,
 
-            // the following are needed for dynamic keyword support
-            var dynamicLocation = Assembly.Load(new AssemblyName("System.Linq.Expressions")).Location;
-            var mscsharpLocation = Assembly.Load(new AssemblyName("Microsoft.CSharp")).Location;
-            var runTimeLocation = Assembly.Load(new AssemblyName("System.Runtime")).Location;
-            var netStandardLocation = Assembly.Load(new AssemblyName("netstandard")).Location;
-            
-            referenceLocations.Add(mscorlibLocation);
-            referenceLocations.Add(baseTemplateLocation);
-            referenceLocations.Add(dynamicLocation);
-            referenceLocations.Add(mscsharpLocation);
-            referenceLocations.Add(runTimeLocation);
-            referenceLocations.Add(netStandardLocation);
+                // the following are needed for dynamic keyword support
+                Assembly.Load(new AssemblyName("System.Linq.Expressions")).Location,
+                Assembly.Load(new AssemblyName("Microsoft.CSharp")).Location,
+                Assembly.Load(new AssemblyName("System.Runtime")).Location,
+                Assembly.Load(new AssemblyName("netstandard")).Location
+            };
 
-            var references = referenceLocations.Distinct().Select(location => MetadataReference.CreateFromFile(location));
+            var references = assemblyLocations.Select(location => MetadataReference.CreateFromFile(location));
 
             var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
 
