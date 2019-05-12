@@ -2,6 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>NVue</PackageId>
+    <Title>NVue</Title>
+    <PackageDescription>A view rendering engine for ASP.NET Core based on the Vue.js template syntax.</PackageDescription>
+    <Version>0.1.0</Version>
+    <Authors>elfalem</Authors>
+    <Company></Company>
+    <Copyright>Copyright (c) 2019 elfalem</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReleaseNotes>https://github.com/elfalem/NVue/blob/master/CHANGELOG.md</PackageReleaseNotes>
+    <PackageTags>C#;template;engine;vue</PackageTags>
+    <RepositoryUrl>https://github.com/elfalem/NVue</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
