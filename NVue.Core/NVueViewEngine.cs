@@ -5,22 +5,6 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 
-/*
- * uses code from:
- * https://www.davepaquette.com/archive/2016/11/22/creating-a-new-view-engine-in-asp-net-core.aspx
- * https://github.com/AspNetMonsters/pugzor/
- */
-
-
-//Resources to track
-//https://github.com/ktsn/vue-ast-explorer
-//https://github.com/dotnet/roslyn/wiki/Scripting-API-Samples
-//https://github.com/vuejs/vue/blob/dev/src/compiler/parser/index.js  - vue compiler
-
-//https://github.com/aspnet/Razor/blob/8d629371bfc8a80b2bca2660106f194ccffd0a21/src/Microsoft.AspNetCore.Razor.Language/DefaultRazorEngine.cs
-//https://github.com/aspnet/AspNetCore/blob/1b500858354efe26493af632bf0e3f5462dc6246/src/Mvc/Mvc.Razor.RuntimeCompilation/src/RuntimeViewCompiler.cs - most important file
-//https://github.com/aspnet/AspNetCore/blob/1b500858354efe26493af632bf0e3f5462dc6246/src/Mvc/Mvc.Razor.RuntimeCompilation/test/RuntimeViewCompilerTest.cs
-//https://github.com/aspnet/AspNetCore/blob/3c09d644cccdb21801f7a79e1188a1a1212de5d9/src/Shared/PropertyActivator/PropertyActivator.cs - second most important file
 namespace NVue.Core{
     public class NVueViewEngine : IViewEngine {
 

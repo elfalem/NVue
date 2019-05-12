@@ -1,33 +1,69 @@
 <template>
-    <div>
-        <h1>{{Blog.Name}}</h1>
-        <hr/>
-        <h3>{{Blog.Subtitle}}</h3>
+    <div class="blog-header">
+        <div class="blog-name">{{Blog.Name}}</div>
+        <div class="blog-subtitle">{{Blog.Subtitle}}</div>
     </div>
-    <div v-for="var post in Blog.Posts" :id="post.Id">
-        Post {{post.Id}} {{post.Title}}
-        <div v-for="var comment in post.Comments" v-if='post.Title.Length == 3 && comment.Content=="b"'>
-            Comment {{comment.Content}} {{howMany(5)}}
-        </div>
-    </div>
+
     <template v-slot:scripts>
         <script>console.log('This content will be added to the \{\{Scripts\}\} slot.');</script>
     </template>
-    <div v-show="5 == 5">
-        This is first.
+
+    <div class="post" v-for="var post in Blog.Posts" :id="post.Id">
+        <div class="post-title">{{post.Title}}</div>
+        <div class="byline">
+            <span class="published">published {{post.Published}}</span>
+            <span class="author"> by {{post.Author}}</span>,
+            <span class="words">{{wordCount(post.Content)}} words</span>
+        </div>
+        <div class="post-content">{{post.Content}}</div>
+        <div class="comment-header" v-if="post.Comments.Count > 0">Comments ({{post.Comments.Count}})</div>
+        <div class="comment-header" v-else>Be the first to comment.</div>
+        <div class="comment" v-for="var comment in post.Comments">
+            <div class="comment-content">{{comment.Content}}</div>
+            <div class="comment-author">{{comment.Author ?? "Anonymous"}} ({{comment.Published}})</div>
+        </div>
     </div>
-    <template v-if="Blog.Posts.Count == 2">
-        This is blue {{5 + 3}}.
-    </template>
-    <div v-else>
-        This is second.
-    </div>
+    <style>
+        .blog-header{
+            margin-bottom: 30px;
+        }
+        .blog-name{
+            font-size: 30px;
+            border-bottom: solid 1px gray;
+        }
+        .post-title{
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .byline{
+            font-style: oblique;
+        }
+        .post{
+            border-top: dashed 1px gray;
+        }
+        .post-content{
+            margin: 20px 0px;
+            font-size: 20px;
+        }
+        .comment-header{
+            font-style: oblique;
+        }
+        .comment{
+            margin-left: 20px;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #dadada
+        }
+        .comment-author{
+            text-align: right;
+        }
+    </style>
 </template>
 
 <script type="text/csharp">
-string example = "example";
+string wordSeparator = " ";
 
-int howMany(int times){
-    return example.Length * times;
+int wordCount(string content){
+    return content.Split(wordSeparator).Length;
 }
 </script>

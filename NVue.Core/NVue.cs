@@ -145,7 +145,7 @@ namespace NVue.Core{
             var templateInstance = assembly.CreateInstance($"TemplateNamespace.{_templateClassName}");
             var templateType = templateInstance.GetType();
 
-            //TODO: cache the templateInstance and properties metadata so as to not create on every render
+            //TODO: cache the templateInstance (or assembly) and properties metadata so as to not create on every render
             var properties = templateType.GetRuntimeProperties()
                 .Where((property) =>
                 {

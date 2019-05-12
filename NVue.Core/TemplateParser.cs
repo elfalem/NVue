@@ -171,8 +171,9 @@ namespace TemplateNamespace{{
 
 
                 if(padding.Length > 0){
+                    // TODO: padding logic needs to be reconsidered with existence of multiple string builders
                     //remove padding to avoid duplication, 12 chars for Write(@"");\n - TODO: what if \r\n ?
-                    sourceDocument.Remove(sourceDocument.Length - (padding.Length + 12), padding.Length + 12);
+                    //sourceDocument.Remove(sourceDocument.Length - (padding.Length + 12), padding.Length + 12);
                 }
             }
 
@@ -184,6 +185,7 @@ namespace TemplateNamespace{{
                 sourceDocument.AppendLine($"if({ifCheck}){{");
             }
 
+            //TODO: need to ensure no white space is written before elseIf and else
             if(elseIfCheck != null){
                 sourceDocument.AppendLine($"else if({elseIfCheck}){{");
             }
@@ -193,7 +195,7 @@ namespace TemplateNamespace{{
             }
             
             if(getPadding){
-                sourceDocument.AppendLine($"Write(@\"{padding}\");");
+                //sourceDocument.AppendLine($"Write(@\"{padding}\");");
             }
 
             var children = node.ChildNodes;
@@ -226,16 +228,16 @@ namespace TemplateNamespace{{
         private void ProcessTextNode(StringBuilder sourceDocument, HtmlNode node){
             var textValue = node.OuterHtml;
             if(string.IsNullOrWhiteSpace(textValue)){
-                sourceDocument.AppendLine($"Write(@\"{textValue}\");");
+                //TODO: find a way to write this without interefering with else and else if blocks
+                //sourceDocument.AppendLine($"Write(@\"{textValue}\");");
             }else{
                 var literals = Regex.Split(textValue, @"\{\{[^{}]+\}\}").Where(l => l.Length > 0);
                 foreach(var literal in literals){
-                    var literalStart = textValue.IndexOf(literal);
-                    if(literalStart == 0){
+                    if(textValue.IndexOf(literal) == 0){
                         sourceDocument.AppendLine($"Write(@\"{literal.Replace("\\{","{").Replace("\\}","}")}\");");
                         textValue = textValue.Substring(literal.Length);
                     }else{
-                        var mustacheTag = textValue.Substring(0, literalStart);
+                        var mustacheTag = textValue.Substring(0, textValue.IndexOf("}}")+2);
                         sourceDocument.AppendLine($"Write({mustacheTag.TrimStart('{').TrimEnd('}')});");
 
                         sourceDocument.AppendLine($"Write(@\"{literal.Replace("\\{","{").Replace("\\}","}")}\");");
