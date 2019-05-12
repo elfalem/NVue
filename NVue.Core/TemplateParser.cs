@@ -5,6 +5,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 
 namespace NVue.Core{
 
@@ -30,7 +33,7 @@ namespace NVue.Core{
             ParseTemplateTag();
         }
 
-        public string GenerateFinalSourceDocument(string templateClassName, ViewContext context){
+        public SourceText GenerateFinalSourceDocument(string templateClassName, List<string> Properties = null){
 
             var sourceDocument = new StringBuilder();
 
@@ -42,10 +45,15 @@ namespace TemplateNamespace{{
 
             //TODO: need to ensure template references the field (existence in ViewData is not enough), actually need to check the template as well
             // what if defined in template but not in View, how to prevent this from erroring out?
-            foreach(var pair in context.ViewData){
-                if(pair.Value != null){
-                    //sourceDocument.AppendLine($"public {DeclarationFromType(pair.Value.GetType())} {pair.Key} {{get; set;}}");
-                    sourceDocument.AppendLine($"public dynamic {pair.Key} {{get; set;}}");
+            // foreach(var pair in context.ViewData){
+            //     if(pair.Value != null){
+            //         //sourceDocument.AppendLine($"public {DeclarationFromType(pair.Value.GetType())} {pair.Key} {{get; set;}}");
+            //         sourceDocument.AppendLine($"public dynamic {pair.Key} {{get; set;}}");
+            //     }
+            // }
+            if(Properties != null){
+                foreach(var property in Properties){
+                    sourceDocument.AppendLine($"public dynamic {property} {{get; set;}}");
                 }
             }
 
@@ -71,15 +79,37 @@ namespace TemplateNamespace{{
 }
             ");
 
-            return sourceDocument.ToString();
+            return SourceText.From(sourceDocument.ToString(), Encoding.UTF8);
         }
 
         private void ParseScripts(){
             var scriptNodes = templateDoc.DocumentNode.SelectNodes("/script[@type=\"text/csharp\"]");
             if(scriptNodes != null){
                 Scripts.AddRange(scriptNodes.Select(scriptNode => scriptNode.InnerText).ToList());
-            }   
+
+                //GetSymbols(scriptNodes.First().InnerText);
+            }
         }
+
+        // private void GetSymbols(string code){
+        //     Console.WriteLine(code);
+        //     Console.WriteLine("-------------------------------");
+        //     var tree = CSharpSyntaxTree.ParseText(code);
+        //     var root = tree.GetRoot();
+        //     var variableDeclarations = root.DescendantNodes().OfType<VariableDeclarationSyntax>();
+
+        //      foreach (var variableDeclaration in variableDeclarations)
+        //         Console.WriteLine(variableDeclaration.Variables.First().Identifier.Value);
+
+        //     Console.WriteLine("-------------------------------");
+
+        //     var identifiers = root.DescendantNodes().OfType<VariableDeclaratorSyntax>();
+
+        //      foreach (var identifier in identifiers)
+        //         Console.WriteLine(identifier.Identifier.Value);
+
+        //     Console.WriteLine("-------------------------------");
+        // }
 
         private void ParseTemplateTag(){
             var sourceDocument = new StringBuilder();

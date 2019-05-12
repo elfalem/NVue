@@ -43,28 +43,39 @@ namespace NVue.Core{
             // initial naive approach
             //return context.Writer.WriteAsync(rawContents.Replace("{{Message}}", context.ViewData["Message"].ToString()));
 
-            var parser = new TemplateParser(rawTemplate);
-            parser.Parse();
+            var templateParser = new TemplateParser(rawTemplate);
+            templateParser.Parse();
 
-            var layoutName = parser.LayoutTemplateName ?? "_Layout";
+            var layoutName = templateParser.LayoutTemplateName ?? "_Layout";
             var layoutPath = GetLayoutPath(layoutName);
 
-            string sourceDocument;
+            SourceText sourceDocument;
+            TemplateParser parserToUse;
             if(layoutPath == null){
-                sourceDocument = parser.GenerateFinalSourceDocument(_templateClassName, context);
+                sourceDocument = templateParser.GenerateFinalSourceDocument(_templateClassName);
+                parserToUse = templateParser;
             }else{
                 var rawLayoutTemplate = File.ReadAllText(layoutPath);
-                var layoutParser = new TemplateParser(rawLayoutTemplate, parser.Slots, parser.Scripts);
+                var layoutParser = new TemplateParser(rawLayoutTemplate, templateParser.Slots, templateParser.Scripts);
                 layoutParser.Parse();
 
-                sourceDocument = layoutParser.GenerateFinalSourceDocument(_templateClassName, context);
+                sourceDocument = layoutParser.GenerateFinalSourceDocument(_templateClassName);
+                parserToUse = layoutParser;
             }
 
-            Console.WriteLine(sourceDocument);
+            //Console.WriteLine(sourceDocument);
+            
+            var compilation = CreateCompilation();
 
-            var assemblyName = System.IO.Path.GetRandomFileName();
+            var syntaxTree = CSharpSyntaxTree.ParseText(sourceDocument); //.WithFilePath(assemblyName);
+            compilation = compilation.AddSyntaxTrees(syntaxTree);
 
-            var compilation = Compile(assemblyName, sourceDocument, context);
+            var missingProperties = GetMissingProperties(compilation);
+            if(missingProperties.Any()){
+                var newSourceDocument = parserToUse.GenerateFinalSourceDocument(_templateClassName, missingProperties);
+                var newSyntaxTree = CSharpSyntaxTree.ParseText(newSourceDocument);
+                compilation = compilation.ReplaceSyntaxTree(syntaxTree, newSyntaxTree);
+            }
 
             var assembly = LoadAssembly(compilation);
 
@@ -86,12 +97,8 @@ namespace NVue.Core{
             return null;
         }
 
-        private CSharpCompilation Compile(string assemblyName, string sourceDocument, ViewContext context){
-            var sourceText = SourceText.From(sourceDocument.ToString(), Encoding.UTF8);
-            var syntaxTree = CSharpSyntaxTree.ParseText(sourceText).WithFilePath(assemblyName);
-
-
-            var referenceLocations = new List<string>();            
+        private CSharpCompilation CreateCompilation(){
+            var referenceLocations = new List<string>();
             var mscorlibLocation = typeof(object).Assembly.Location;
             var baseTemplateLocation = typeof(BaseNVueTemplate).Assembly.Location;
 
@@ -108,27 +115,22 @@ namespace NVue.Core{
             referenceLocations.Add(runTimeLocation);
             referenceLocations.Add(netStandardLocation);
 
-            // foreach(var value in context.ViewData.Values){
-            //     GetAssemblyReferences(referenceLocations, value.GetType());
-            // }
-
             var references = referenceLocations.Distinct().Select(location => MetadataReference.CreateFromFile(location));
 
             var compilationOptions = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
 
-            return CSharpCompilation.Create(assemblyName, options: compilationOptions, references: references).AddSyntaxTrees(syntaxTree);
+            var assemblyName = System.IO.Path.GetRandomFileName();
+
+            return CSharpCompilation.Create(assemblyName, options: compilationOptions, references: references);
         }
 
-        // even this is not enough, if not for dynamics, would have to go into child properties
-        // private void GetAssemblyReferences(List<string> referenceLocations, Type type){
-        //     referenceLocations.Add(type.Assembly.Location);
-        //     if(type.IsGenericType){
-        //         foreach(var genericType in type.GenericTypeArguments){
-        //             GetAssemblyReferences(referenceLocations, genericType);
-        //         }
-        //     }
-        // }
+        private List<string> GetMissingProperties(CSharpCompilation compilaion){
+            //TODO: what if GetMessage() is using a different culture?
+            var messages  = compilaion.GetDiagnostics().Where(d => d.Id.Equals("CS0103")).Select(d => d.GetMessage()).Distinct().
+                Select(m => m.Replace("The name '", string.Empty).Replace("' does not exist in the current context", string.Empty));
 
+            return messages.ToList();
+        }
         private Assembly LoadAssembly(CSharpCompilation compilation){
             using (var assemblyStream = new MemoryStream())
             {
@@ -136,7 +138,7 @@ namespace NVue.Core{
 
                 if (!result.Success)
                 {
-                    throw new Exception(string.Join(" ", result.Diagnostics.Select(d => d + "\n")));
+                    throw new Exception(string.Join(" ", result.Diagnostics.Select(d => d.Id + "-" + d.GetMessage() + "\n")));
                 }
 
                 assemblyStream.Seek(0, SeekOrigin.Begin);
