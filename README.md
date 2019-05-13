@@ -18,7 +18,7 @@ String interpolation:
 Iterate through a list of items:
 ````
 <template>
-    <div v-for="item in Items">
+    <div v-for="var item in Items">
         {{item.Id}} - {{item.Name}}
     </div>
 </template>
@@ -27,7 +27,7 @@ Iterate through a list of items:
 Expressions can also be bound to attributes if they start with a colon. (Alternatively you can use the more verbose `v-bind:` syntax)
 ````
 <template>
-    <div v-for="item in Items">
+    <div v-for="var item in Items">
         <span :id="item.Id">{{item.Name}}</span>
     </div>
 </template>
