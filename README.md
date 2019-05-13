@@ -138,7 +138,7 @@ To verify, you can run the application and browse it at https://localhost:5001
 
 `dotnet run`
 
-Add and use the NVue NuGet package (first stop the server with Ctrl+C if it's running).
+Add and use the NVue [NuGet package](https://www.nuget.org/packages/NVue/) (first stop the server with Ctrl+C if it's running).
 
 `dotnet add package NVue`
 
