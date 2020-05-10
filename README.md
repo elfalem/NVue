@@ -201,6 +201,16 @@ Hello World!
     Hello South America
 ````
 
+## Direct Usage
+
+The template engine can also be directly invoked in code as follows:
+
+````
+var template = "<template>Hello {{Name}}, welcome to NVue!</template>";
+var result = NVueTemplateEngine.RunCompile(template, "testtemplate", null, new { Name = "World" });
+Console.WriteLine(result); // Hello World, welcome to NVue!
+````
+
 ## Limitations
 
 There are no equivalents to the Razor concepts of Tag Helpers, Partial Views, and View Components.
